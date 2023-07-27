@@ -1,70 +1,58 @@
-import React, { Component } from 'react';
+import React, {useState} from 'react';
 
-class ResponseCheck extends Component{
-	state = {
-			state : 'waiting',
-			message : '클릭해서 시작하세요',
-			result : [],
-	};
+let timeout;
+let startTime;
+let endTime;
 
-	timeout;
-	startTime;
-	endTime;
+const ResponseCheck = ()=>{
+	const [state, setState] = useState('waiting');
+	const [message, setMessage] = useState('클릭해서 시작하세요');
+	const [result, setResult] = useState([]);
 
-	onClickScreen = () =>{
-		const {state, message, result} = this.state;
+
+	const onClickScreen = () =>{
 		if(state=='waiting'){
-			this.setState({
-				state : 'ready',
-				message: '초록색이 되면 클릭하세요',
-			});
-			this.timeout = setTimeout(()=>{
-				this.setState({
-					state: 'now',
-					message: '지금 클릭하세요'
-				});
-				this.startTime = new Date();
-			}, Math.floor(Math.random() * 1000) + 2000) // 2~3초 랜덤;
-		}
-		if(state == 'ready'){
-			this.setState({
-				state: 'waiting',
-				message: '너무 성급하시네요 초록색일 때 클릭하세요',
-			});
-			clearTimeout(this.timeout);
-		}
 
-		if(state=='now'){
-			this.endTime = new Date();
-			this.setState((prevState)=>{
-				return{
-					state: 'waiting',
-					message: '클릭해서 시작하세요',
-					result: [...prevState.result, this.endTime - this.startTime],
-				}
-			});
-			console.log(this.endTime - this.startTime);
+			setState('ready');
+			setMessage('초록색이 되면 클릭하세요');
+
+			timeout = setTimeout(()=>{
+				setState('now');
+				setMessage('지금 클릭하세요')
+				startTime = new Date();
+			}, Math.floor(Math.random() * 1000) + 2000) // 2~3초 랜덤;
+		}else if(state == 'ready'){
+			setState('waiting');
+			setMessage('너무 성급하시네요. 초록색일 때 클릭하세요');
+			clearTimeout(timeout);
+		}else if(state=='now'){
+			
+			endTime = new Date();
+			
+			setState('waiting');
+			setMessage('클릭해서 시작하세요');
+			setResult((prevState)=>{
+				return [...prevState, endTime - startTime];
+			})
+			console.log(endTime - startTime);
 		}
 	}
 
-	renderAverage = () =>{
-		const {result} = this.state;
+	const renderAverage = () =>{
 		return 	result.length === 0 
 			? null 
-			: <div>평균시간 : {this.state.result.reduce((a, c) => a + c) / this.state.result.length}ms</div>
+			: <div>평균시간 : {result.reduce((a, c) => a + c) / result.length}ms</div>
 	}
 
-	render(){
-		const {state, message} = this.state;
-		return(
-			<>
-				<div id="screen" className={state} onClick={this.onClickScreen}>
-					{message}
-				</div>
-				{this.renderAverage()}
-			</>
-		);
-	}
+
+	return(
+		<>
+			<div id="screen" className={state} onClick={onClickScreen}>
+				{message}
+			</div>
+			{renderAverage()}
+		</>
+	);
 }
 
 export default ResponseCheck;
